@@ -24,5 +24,4 @@
 ## Testing Approach
 
     Unit Tests: Introduced new unit tests using [testing framework] to validate XML parsing and validation functions.
-    Integration Tests: Integrated tests into existing test suite to ensure compatibility and coverage across modules.
     Review: Inviting code review for validation logic and test implementation to ensure code quality and adherence to best practices.
