@@ -15,27 +15,25 @@ fn main() {
 
 //feel free to add other classes/methods if you want
 fn determine_xml(input: &String) -> bool {
-
+    // edge cases
     if input.len() == 0 {
         return true
     }
-
-    // create a stack that keeps track any opening tags
-    let mut stack = Vec::new();
-
-    let mut i = 0;
     // saving input to chars vector
     let chars: Vec<char> = input.chars().collect();
-
     if chars[chars.len() - 1] != '>' {
         return false
     }
 
+    // create a stack that keeps track any opening tags
+    let mut stack = Vec::new();
+    let mut i = 0;
+
     while i < chars.len() {
         if chars[i] == '<' {
             if i + 1 < chars.len() && chars[i + 1] == '/' {
-                // check if it's a closing tag(right side)
                 // Closing tag
+                // find the end of the closing tag last char
                 let end = input[i + 2..].find('>').unwrap_or(chars.len() - i - 2) + i + 2;
                 let tag_name = &input[i + 2..end];
                 if stack.pop() != Some(tag_name.to_string()) {
@@ -44,15 +42,13 @@ fn determine_xml(input: &String) -> bool {
                 }
                 i = end + 1;
             } else {
-                // check if it's a opening tag(left side)
                 // Opening tag
+                // find the end of opening tag last char
                 let end = input[i + 1..].find('>').unwrap_or(chars.len() - i - 1) + i + 1;
-                let tag_content = &input[i + 1..end];
-                let space_pos = tag_content.find(' ').unwrap_or(tag_content.len());
-                let tag_name = &tag_content[..space_pos];
+                let tag_name = &input[i + 1..end];
 
-                if tag_content.ends_with("/") {
-                    // Self-closing tag, skip it
+                if tag_name.ends_with("/") {
+                    // Self-closing tag, skip it without push
                     i = end + 1;
                 } else {
                     // Normal opening tag
@@ -65,7 +61,6 @@ fn determine_xml(input: &String) -> bool {
             i += 1;
         }
     }
-
     return stack.is_empty()
 }
 
@@ -84,9 +79,12 @@ mod tests {
     #[test_case("<Design><Code>   </Code></Design>", true ; "normal case with whitespace content")]
 
     #[test_case("<Design><Code>hello world</Code></Design><People>", false ; "no closing tag")]
-    #[test_case("<Design><Code>hello world</Code></Design", false ; "missing right")]
+    #[test_case("<Design><Code>hello world</Code></Design", false ; "missing right >")]
+    #[test_case("<Design><Code>hello world</Code</Design>", false ; "missing right > two")]
 
-    #[test_case("<Design>Code>hello world</Code></Design>", false ; "missing left")]
+    #[test_case("<Design>Code>hello world</Code></Design>", false ; "missing left <")]
+    #[test_case("<Design><Code>hello world</Code>/Design>", false ; "missing left < two")]
+
 
     #[test_case("<Design><Code>hello world</Code></Design></People>", false ; "no opening tag")]
     #[test_case("<Design><Code>hello world</Code> <People></People></Design>", true ; "extra closing tag")]
@@ -105,6 +103,7 @@ mod tests {
     #[test_case("<Parent><Child></Child><Child></Child></Parent>", true ; "multiple children")]
     #[test_case("<Parent><Child></Parent>", false ; "child outside parent")]
 
+    #[test_case("", true ; "no XML string")]
 
 
     fn check_determine_xml(input: &'static str, expected: bool) {
